@@ -3,48 +3,46 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\AyudaT;
+use Illuminate\Support\Str;
 
 class AyudaTController extends Controller
 {
-
     public function index()
     {
-        return view('Ayudat.index');
-
-        $name = $_POST['name'];
-        $cargo = $_POST['cargo'];
-        $phone = $_POST['phone'];
-        $photo = $_POST['photo'];
-
-        if ($photo->file('photo')) {
-            $rutaGuardarImg='/imagen/';
-            $imagenNombre = $name.$cargo;
-            $photo->move($rutaGuardarImg,$imagenNombre );
-            $photo=(string)$rutaGuardarImg.$imagenNombre;
-
-
-
-        }
-        else {
-
-            $rutaGuardarImg='/imagen/';
-            $photo=(string)$rutaGuardarImg."dafault.jpg";
-        }
-
-
-
+        return view('AyudaT.index');
     }
-    public function preview()
+
+    public function create(array $data){
+        return AyudaT::create([
+            'name' => $data['name'],
+            'cargo' => $data['cargo'],
+            'phone' => $data['phone'],
+            'photo' => $data['photo'],
+        ]);
+    }
+
+    public function preview(Request $request)
     {
-        if (isset($_GET['btnPreviewAyudaT'])) {
+        $ayudaT = $request->all();
 
-            $name = $_GET['name'];
-            $cargo = $_GET['cargo'];
-            $phone = $_GET['phone'];
-            $photo = $_GET['photo'];
+        if (isset($_POST['btnPreviewAyudaT'])) {
 
-            return view('AyudaT.preview', $name, $cargo, $phone, $photo);
+
+            if ($photo=$request->file('photo')) {
+                $photo       =   $request->file('photo');
+                $nombreimagen   =   Str::slug("nombre").time().'.'.$photo->getClientOriginalExtension();
+                $nuevaruta      =   public_path('/imagen/'.$nombreimagen);
+                copy($photo->getRealPath(),$nuevaruta);
+                $ayudaT['photo']='/imagen/'.$nombreimagen;
+
+            } else {
+
+                $rutaGuardarImg = '/imagen/';
+                $ayudaT['photo'] = (string)$rutaGuardarImg . "default.jpg";
+            }
+
+            return view('ayudat.preview', compact('ayudaT'));
         }
     }
-
 }
